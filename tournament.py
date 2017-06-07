@@ -1,10 +1,8 @@
 """Estimate the strength rating of a student defined heuristic by competing
 against fixed-depth minimax and alpha-beta search agents in a round-robin
 tournament.
-
 NOTE: All agents are constructed from the student CustomPlayer implementation,
 so any errors present in that class will affect the outcome.
-
 The student agent plays a number of "fair" matches against each test agent.
 The matches are fair because the board is initialized randomly for both
 players, and the players play each match twice -- once as the first player and
@@ -14,6 +12,7 @@ order corrects for imbalances due to both starting position and initiative.
 import itertools
 import random
 import warnings
+from time import time
 
 from collections import namedtuple
 
@@ -23,7 +22,7 @@ from sample_players import (RandomPlayer, open_move_score,
 from game_agent import (MinimaxPlayer, AlphaBetaPlayer, custom_score,
                         custom_score_2, custom_score_3)
 
-NUM_MATCHES = 5  # number of matches against each opponent
+NUM_MATCHES = 100  # number of matches against each opponent
 TIME_LIMIT = 150  # number of milliseconds before timeout
 
 DESCRIPTION = """
@@ -39,7 +38,6 @@ Agent = namedtuple("Agent", ["player", "name"])
 
 def play_round(cpu_agent, test_agents, win_counts, num_matches):
     """Compare the test agents to the cpu agent in "fair" matches.
-
     "Fair" matches use random starting locations and force the agents to
     play as both first and second player to control for advantages resulting
     from choosing better opening moves or having first initiative to move.
@@ -63,10 +61,10 @@ def play_round(cpu_agent, test_agents, win_counts, num_matches):
             winner, _, termination = game.play(time_limit=TIME_LIMIT)
             win_counts[winner] += 1
 
-        if termination == "timeout":
-            timeout_count += 1
-        elif winner not in test_agents and termination == "forfeit":
-            forfeit_count += 1
+            if termination == "timeout":
+                timeout_count += 1
+            elif termination == "forfeit":
+                forfeit_count += 1
 
     return timeout_count, forfeit_count
 
@@ -84,18 +82,12 @@ def play_matches(cpu_agents, test_agents, num_matches):
     total_forfeits = 0.
     total_matches = 2 * num_matches * len(cpu_agents)
 
-    print("\n{:^9}{:^13}{:^13}{:^13}{:^13}{:^13}".format(
-        "Match #", "Opponent", test_agents[0].name, test_agents[1].name,
-        test_agents[2].name, test_agents[3].name))
-    print("{:^9}{:^13} {:^5}| {:^5} {:^5}| {:^5} {:^5}| {:^5} {:^5}| {:^5}"
-          .format("", "", *(["Won", "Lost"] * 4)))
+    print("\n{:^9}{:^13}".format("Match #", "Opponent") + ''.join(['{:^13}'.format(x[1].name) for x in enumerate(test_agents)]))
+    print("{:^9}{:^13} ".format("", "") +  ' '.join(['{:^5}| {:^5}'.format("Won", "Lost") for x in enumerate(test_agents)]))
 
     for idx, agent in enumerate(cpu_agents):
-        wins = {test_agents[0].player: 0,
-                test_agents[1].player: 0,
-                test_agents[2].player: 0,
-                test_agents[3].player: 0,
-                agent.player: 0}
+        wins = {key: 0 for (key, value) in test_agents}
+        wins[agent.player] = 0
 
         print("{!s:^9}{:^13}".format(idx + 1, agent.name), end="", flush=True)
 
@@ -106,15 +98,19 @@ def play_matches(cpu_agents, test_agents, num_matches):
         _total = 2 * num_matches
         round_totals = sum([[wins[agent.player], _total - wins[agent.player]]
                             for agent in test_agents], [])
-        print(" {:^5}| {:^5} {:^5}| {:^5} {:^5}| {:^5} {:^5}| {:^5}"
-              .format(*round_totals))
+        print(' ' + ' '.join([
+            '{:^5}| {:^5}'.format(
+                round_totals[i],round_totals[i+1]
+            ) for i in range(0, len(round_totals), 2)
+        ]))
 
     print("-" * 74)
-    print("{:^9}{:^13}{:^13}{:^13}{:^13}{:^13}\n".format(
-        "", "Win Rate:",
-        *["{:.1f}%".format(100 * total_wins[a.player] / total_matches)
-          for a in test_agents]
-    ))
+    print('{:^9}{:^13}'.format("", "Win Rate:") +
+        ''.join([
+            '{:^13}'.format(
+                "{:.1f}%".format(100 * total_wins[x[1].player] / total_matches)
+            ) for x in enumerate(test_agents)
+    ]))
 
     if total_timeouts:
         print(("\nThere were {} timeouts during the tournament -- make sure " +
@@ -148,12 +144,15 @@ def main():
         Agent(AlphaBetaPlayer(score_fn=improved_score), "AB_Improved")
     ]
 
+    start_time = time() 
     print(DESCRIPTION)
     print("{:^74}".format("*************************"))
     print("{:^74}".format("Playing Matches"))
     print("{:^74}".format("*************************"))
     play_matches(cpu_agents, test_agents, NUM_MATCHES)
-
+    ejecution_time = time() - start_time
+    print()
+    print('time', ejecution_time)
 
 if __name__ == "__main__":
     main()
