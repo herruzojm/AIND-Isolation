@@ -12,6 +12,13 @@ class SearchTimeout(Exception):
     pass
 
 
+"""
+Defensive heuristic:
++ stay away from the opponent
++ having multiple options to move is more important that limiting
+opponent's moves.
+· near the end of the game, distance is no longer of concern
+"""
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
@@ -59,7 +66,12 @@ def custom_score(game, player):
         return float(len(my_moves)*3 - len(opponent_moves))
  
 
-
+"""
+Aggresive heuristic:
++ get close to the opponent
++ limiting opponent's moves is more important that having multiple options to move.
+· near the end of the game, distance is no longer of concern
+"""
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
@@ -105,7 +117,11 @@ def custom_score_2(game, player):
         return float(len(my_moves) - len(opponent_moves)*3)
        
 
-
+"""
+Improved weighted heuristic:
++ having multiple options to move is more important that limiting
+opponent's moves.
+"""
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
