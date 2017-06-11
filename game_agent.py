@@ -1,11 +1,11 @@
-
-
 """Finish all TODO items in this file to complete the isolation project, then
 test your agent's strength against a set of known agents using tournament.py
 and include the results in your report.
 """
 import random
 import math
+
+
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -17,7 +17,7 @@ Defensive heuristic:
 + stay away from the opponent
 + having multiple options to move is more important that limiting
 opponent's moves.
-· near the end of the game, distance is no longer of concern
+* near the end of the game, distance is no longer of concern
 """
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -70,7 +70,7 @@ def custom_score(game, player):
 Aggresive heuristic:
 + get close to the opponent
 + limiting opponent's moves is more important that having multiple options to move.
-· near the end of the game, distance is no longer of concern
+* near the end of the game, distance is no longer of concern
 """
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
@@ -459,8 +459,8 @@ class AlphaBetaPlayer(IsolationPlayer):
         
         best_move = (-1, -1)
         best_score = float('-inf') 
-        
-        legal_moves = game.get_legal_moves()                
+
+        legal_moves = game.get_legal_moves()
         if legal_moves:
             best_move = legal_moves[random.randint(0, len(legal_moves)-1)]
         else:
